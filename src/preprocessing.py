@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import sys
+import os
 
 
 def preprocess_data(data_path=None, df=None):
@@ -15,6 +16,9 @@ def preprocess_data(data_path=None, df=None):
     Returns:
         pd.DataFrame: Оброблений DataFrame, готовий для моделювання.
     """
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(base_dir, "..", "datasets", "internet_service_churn.csv")
+
     # Завантаження даних
     if data_path is not None:
         df = pd.read_csv(data_path)
