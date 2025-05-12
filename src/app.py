@@ -24,6 +24,45 @@ except Exception as e:
 # Створення Streamlit-додатка
 st.title("Прогнозування Відтоку Клієнтів для Телекомунікаційної компанії")
 
+# Документація про необхідні колонки
+st.markdown(
+    """
+### Інструкція для CSV-файлу
+Для коректного прогнозування ваш CSV-файл повинен містити наступні колонки:
+- **is_tv_subscriber**: Чи є підписка на ТБ (0 або 1)
+- **is_movie_package_subscriber**: Чи є підписка на пакет фільмів (0 або 1)
+- **subscription_age**: Вік підписки в роках (додатне число)
+- **reamining_contract**: Залишок контракту в роках (додатне число або 0)
+- **service_failure_count**: Кількість відмов сервісу (ціле число ≥ 0)
+- **download_avg**: Середнє завантаження в МБ (додатне число)
+- **upload_avg**: Середнє вивантаження в МБ (додатне число)
+- **download_over_limit**: Кількість перевищень ліміту завантаження (ціле число від 0 до 7)
+
+Якщо будь-яка з колонок відсутня, вона буде заповнена нулями, що може вплинути на точність прогнозу.
+"""
+)
+
+# Шаблон CSV для завантаження
+template_data = pd.DataFrame(
+    {
+        "is_tv_subscriber": [1],
+        "is_movie_package_subscriber": [0],
+        "subscription_age": [2.5],
+        "reamining_contract": [1.0],
+        "service_failure_count": [0],
+        "download_avg": [100.0],
+        "upload_avg": [10.0],
+        "download_over_limit": [0],
+    }
+)
+template_csv = template_data.to_csv(index=False)
+st.download_button(
+    label="Завантажити шаблон CSV",
+    data=template_csv,
+    file_name="template_churn_prediction.csv",
+    mime="text/csv",
+)
+
 input_type = st.radio(
     "Оберіть вид завантаження даних клієнта:", ["Завантажити дані у форматі CSV", "Ввести вручну"]
 )
@@ -37,6 +76,25 @@ if input_type == "Завантажити дані у форматі CSV":
     if uploaded_file is not None:
         try:
             data = pd.read_csv(uploaded_file)
+            # Перевірка колонок перед обробкою
+            required_cols = [
+                "is_tv_subscriber",
+                "is_movie_package_subscriber",
+                "subscription_age",
+                "reamining_contract",
+                "service_failure_count",
+                "download_avg",
+                "upload_avg",
+                "download_over_limit",
+            ]
+            missing_cols = [col for col in required_cols if col not in data.columns]
+            if missing_cols:
+                st.error(
+                    f"Увага! Відсутні необхідні колонки: {missing_cols}. "
+                    "Вони будуть заповнені нулями, що може суттєво вплинути на точність прогнозу. "
+                    "Будь ласка, перевірте ваш датасет або скористайтеся шаблоном CSV."
+                )
+                logger.warning(f"Відсутні колонки при завантаженні CSV: {missing_cols}")
             st.success("Файл успішно завантажено!")
             logger.info("Файл CSV успішно завантажено.")
             st.dataframe(data)
@@ -53,7 +111,6 @@ elif input_type == "Ввести вручну":
         is_tv_subscriber = int(st.checkbox("Є підписка на ТБ"))
         is_movie_package_subscriber = int(st.checkbox("Є підписка на пакет з фільмами"))
         subscription_age = st.number_input("Введіть вік підписки (роки)", min_value=0.0, step=0.1)
-        bill_avg = st.number_input("Введіть середній чек", min_value=0.0, step=1.0)
         reamining_contract = st.number_input(
             "Введіть залишок контракту (роки)", min_value=0.0, step=0.1
         )
@@ -70,7 +127,7 @@ elif input_type == "Ввести вручну":
 
         if submitted:
             # Валідація введених даних
-            if subscription_age < 0 or download_avg < 0 or upload_avg < 0 or bill_avg < 0:
+            if subscription_age < 0 or download_avg < 0 or upload_avg < 0:
                 st.error("Введені значення не можуть бути від’ємними!")
                 logger.error("Введені від’ємні значення при ручному вводі.")
             else:
@@ -81,7 +138,6 @@ elif input_type == "Ввести вручну":
                             "is_tv_subscriber": is_tv_subscriber,
                             "is_movie_package_subscriber": is_movie_package_subscriber,
                             "subscription_age": subscription_age,
-                            "bill_avg": bill_avg,
                             "reamining_contract": reamining_contract,
                             "service_failure_count": service_failure_count,
                             "download_avg": download_avg,
@@ -107,8 +163,8 @@ if data is not None:
                 else:
                     st.write(f"Клієнт {i+1}: **Середня ймовірність відтоку** — {p:.2f}")
 
-            # Візуалізація результатів
-            if len(preds) > 1:
+            # Візуалізація результатів лише для CSV (більше одного клієнта)
+            if input_type == "Завантажити дані у форматі CSV" and len(preds) > 1:
                 st.subheader("Візуалізація ймовірностей відтоку")
                 fig, ax = plt.subplots()
                 ax.bar(

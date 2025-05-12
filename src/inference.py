@@ -39,8 +39,11 @@ def preprocess_input(df=None, scaler=None, logger=None):
     ]
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
-        logger.error(f"Відсутні необхідні колонки: {missing_cols}")
-        raise ValueError(f"Відсутні необхідні колонки: {missing_cols}")
+        logger.warning(
+            f"Відсутні колонки: {missing_cols}. Заповнюємо значеннями за замовчуванням (0)."
+        )
+        for col in missing_cols:
+            df[col] = 0  # Заповнення відсутніх колонок нулями
 
     # Валідація типу даних для download_over_limit
     if not pd.api.types.is_numeric_dtype(df["download_over_limit"]):
