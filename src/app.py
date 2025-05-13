@@ -4,16 +4,23 @@ import pickle
 import matplotlib.pyplot as plt
 from inference import predict_churn, preprocess_input
 import logging
+import os
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Завантаження моделі та scaler
+# Визначаємо корінь проєкту
+current_dir = os.path.dirname(os.path.abspath(__file__))  # Поточна директорія (src)
+project_root = os.path.dirname(current_dir)  # Корінь проєкту (на один рівень вище)
+
+# Завантаження моделі та scaler із кореня проєкту
 try:
-    with open("model.pkl", "rb") as f:
+    model_path = os.path.join(project_root, "model.pkl")
+    scaler_path = os.path.join(project_root, "scaler.pkl")
+    with open(model_path, "rb") as f:
         model = pickle.load(f)
-    with open("scaler.pkl", "rb") as f:
+    with open(scaler_path, "rb") as f:
         scaler = pickle.load(f)
     logger.info("Модель і scaler успішно завантажено.")
 except Exception as e:
@@ -166,12 +173,35 @@ if data is not None:
             # Візуалізація результатів лише для CSV (більше одного клієнта)
             if input_type == "Завантажити дані у форматі CSV" and len(preds) > 1:
                 st.subheader("Візуалізація ймовірностей відтоку")
-                fig, ax = plt.subplots()
-                ax.bar(
+                # Налаштування стилю
+                plt.style.use("ggplot")
+                fig, ax = plt.subplots(figsize=(10, 6))
+                bars = ax.bar(
                     range(1, len(preds) + 1),
                     preds,
                     color=["red" if p > 0.7 else "orange" if p > 0.3 else "green" for p in preds],
                 )
+                # Додавання міток значень
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2.0,
+                        height,
+                        f"{height:.2f}",
+                        ha="center",
+                        va="bottom",
+                    )
+                # Додавання сітки
+                ax.grid(True, axis="y", linestyle="--", alpha=0.7)
+                # Додавання легенд
+                from matplotlib.patches import Patch
+
+                legend_elements = [
+                    Patch(facecolor="red", label="Висока ймовірність (>0.7)"),
+                    Patch(facecolor="orange", label="Середня ймовірність (0.3-0.7)"),
+                    Patch(facecolor="green", label="Низька ймовірність (<0.3)"),
+                ]
+                ax.legend(handles=legend_elements, loc="best")
                 ax.set_xlabel("Клієнт")
                 ax.set_ylabel("Ймовірність відтоку")
                 ax.set_title("Ймовірності відтоку клієнтів")

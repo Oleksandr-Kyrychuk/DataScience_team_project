@@ -10,8 +10,11 @@ import seaborn as sns
 
 
 def model_rf():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    data_path = os.path.join(base_dir, "..", "datasets", "internet_service_churn.csv")
+    # Визначаємо корінь проєкту (на один рівень вище від src)
+    current_dir = os.path.dirname(os.path.abspath(__file__))  # Поточна директорія (src)
+    project_root = os.path.dirname(current_dir)  # Корінь проєкту (на один рівень вище)
+
+    data_path = os.path.join(project_root, "datasets", "internet_service_churn.csv")
 
     cleaned_data, scaler = preprocess_data(data_path, return_scaler=True)
 
@@ -31,10 +34,13 @@ def model_rf():
 
     model.fit(X_train, y_train)
 
-    # Зберігаємо модель і scaler через pickle
-    with open("model.pkl", "wb") as f:
+    # Зберігаємо модель і scaler у корені проєкту
+    model_path = os.path.join(project_root, "model.pkl")
+    scaler_path = os.path.join(project_root, "scaler.pkl")
+
+    with open(model_path, "wb") as f:
         pickle.dump(model, f)
-    with open("scaler.pkl", "wb") as f:
+    with open(scaler_path, "wb") as f:
         pickle.dump(scaler, f)
 
     y_pred = model.predict(X_test)
@@ -49,12 +55,12 @@ def model_rf():
     print("\nFeature Importance:")
     print(feature_importance)
 
-    # Візуалізація важливості ознак
+    # Візуалізація важливості ознак (зберігаємо в корені проєкту)
     plt.figure(figsize=(10, 6))
     sns.barplot(x="importance", y="feature", data=feature_importance)
     plt.title("Feature Importance in Random Forest")
     plt.tight_layout()
-    plt.savefig("feature_importance.png")
+    plt.savefig(os.path.join(project_root, "feature_importance.png"))
     plt.close()
 
     return model
