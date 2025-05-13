@@ -11,8 +11,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Визначаємо корінь проєкту
-current_dir = os.path.dirname(os.path.abspath(__file__))  # D:\DataScience_team_project\src
-project_root = os.path.dirname(current_dir)  # D:\DataScience_team_project
+current_dir = os.path.dirname(os.path.abspath(__file__))  # Поточна директорія (src)
+project_root = os.path.dirname(current_dir)  # Корінь проєкту (на один рівень вище)
 
 # Завантаження моделі та scaler із кореня проєкту
 try:

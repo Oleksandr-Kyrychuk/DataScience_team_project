@@ -11,8 +11,8 @@ import seaborn as sns
 
 def model_rf():
     # Визначаємо корінь проєкту (на один рівень вище від src)
-    current_dir = os.path.dirname(os.path.abspath(__file__))  # D:\DataScience_team_project\src
-    project_root = os.path.dirname(current_dir)  # D:\DataScience_team_project
+    current_dir = os.path.dirname(os.path.abspath(__file__))  # Поточна директорія (src)
+    project_root = os.path.dirname(current_dir)  # Корінь проєкту (на один рівень вище)
 
     data_path = os.path.join(project_root, "datasets", "internet_service_churn.csv")
 
