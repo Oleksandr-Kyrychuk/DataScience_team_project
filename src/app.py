@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go  # Додано імпорт
 from inference import predict_churn, preprocess_input
 import logging
 import os
@@ -162,18 +163,87 @@ if data is not None:
             preds = predict_churn(model, processed_data, logger=logger)
 
             st.subheader("Результати прогнозу:")
+            recommendation = {
+                "Висока": "Рекомендується зв’язатися з клієнтом для пропозиції знижок\
+                 або інших утримуючих заходів.",
+                "Середня": "Клієнт може бути в зоні ризику, варто звернути увагу.",
+                "Низька": "Клієнт, ймовірно, залишиться з компанією.",
+            }
             for i, p in enumerate(preds):
                 if p > 0.7:
-                    st.write(f"Клієнт {i+1}: **Висока ймовірність відтоку** — {p:.2f}")
+                    color = "red"
+                    level = "Висока"
                 elif p < 0.3:
-                    st.write(f"Клієнт {i+1}: **Низька ймовірність відтоку** — {p:.2f}")
+                    color = "green"
+                    level = "Низька"
                 else:
-                    st.write(f"Клієнт {i+1}: **Середня ймовірність відтоку** — {p:.2f}")
+                    color = "orange"
+                    level = "Середня"
 
-            # Візуалізація результатів лише для CSV (більше одного клієнта)
+                st.markdown(
+                    f"""
+                    <div style='
+                        background-color:{color};
+                        padding:10px;
+                        border-radius:5px;
+                        color:white;
+                        font-weight:bold;
+                        margin-bottom:10px'>
+                        ⚠️ Клієнт {i+1}: {level} ймовірність відтоку — {p:.2f}
+                    </div>
+                    <div style='padding:5px; color:black;'>
+                        {recommendation[level]}
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+            # Візуалізація для одного користувача
+            if len(preds) == 1:
+                st.subheader("Візуалізація ймовірності відтоку")
+                fig = go.Figure(
+                    go.Indicator(
+                        mode="gauge+number",
+                        value=preds[0],
+                        title={"text": "Ймовірність відтоку"},
+                        gauge={
+                            "axis": {"range": [0, 1]},
+                            "bar": {"color": "darkblue"},
+                            "steps": [
+                                {"range": [0, 0.3], "color": "green"},
+                                {"range": [0.3, 0.7], "color": "orange"},
+                                {"range": [0.7, 1], "color": "red"},
+                            ],
+                        },
+                    )
+                )
+                st.plotly_chart(fig)
+
+            # Таблиця та експорт для CSV
+            if input_type == "Завантажити дані у форматі CSV":
+                results_df = pd.DataFrame(
+                    {
+                        "ID клієнта": data.get("id", range(1, len(preds) + 1)),
+                        "Ймовірність відтоку": [f"{p:.2f}" for p in preds],
+                        "Катesorія ризику": [
+                            "Висока" if p > 0.7 else "Середня" if p > 0.3 else "Низька"
+                            for p in preds
+                        ],
+                    }
+                )
+                st.subheader("Підсумкова таблиця результатів")
+                st.dataframe(results_df)
+                results_csv = results_df.to_csv(index=False)
+                st.download_button(
+                    label="Завантажити результати прогнозу",
+                    data=results_csv,
+                    file_name="churn_predictions.csv",
+                    mime="text/csv",
+                )
+
+            # Візуалізація для CSV (більше одного клієнта)
             if input_type == "Завантажити дані у форматі CSV" and len(preds) > 1:
                 st.subheader("Візуалізація ймовірностей відтоку")
-                # Налаштування стилю
                 plt.style.use("ggplot")
                 fig, ax = plt.subplots(figsize=(10, 6))
                 bars = ax.bar(
@@ -181,7 +251,6 @@ if data is not None:
                     preds,
                     color=["red" if p > 0.7 else "orange" if p > 0.3 else "green" for p in preds],
                 )
-                # Додавання міток значень
                 for bar in bars:
                     height = bar.get_height()
                     ax.text(
@@ -191,9 +260,7 @@ if data is not None:
                         ha="center",
                         va="bottom",
                     )
-                # Додавання сітки
                 ax.grid(True, axis="y", linestyle="--", alpha=0.7)
-                # Додавання легенд
                 from matplotlib.patches import Patch
 
                 legend_elements = [
