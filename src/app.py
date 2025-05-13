@@ -201,7 +201,7 @@ if data is not None:
                     Patch(facecolor="orange", label="Середня ймовірність (0.3-0.7)"),
                     Patch(facecolor="green", label="Низька ймовірність (<0.3)"),
                 ]
-                ax.legend(handles=legend_elements, loc="upper right")
+                ax.legend(handles=legend_elements, loc="best")
                 ax.set_xlabel("Клієнт")
                 ax.set_ylabel("Ймовірність відтоку")
                 ax.set_title("Ймовірності відтоку клієнтів")
