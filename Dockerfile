@@ -18,4 +18,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 EXPOSE 8501
 
 # Run model.py first (to prepare the model) then start the Streamlit app
-CMD bash -c "python src/model.py && streamlit run src/app.py --server.port=8501 --server.enableCORS=false"
+CMD bash -c "python src/model.py && streamlit run src/app.py --server.address=0.0.0.0 --server.port=8501 --server.enableCORS=false"
