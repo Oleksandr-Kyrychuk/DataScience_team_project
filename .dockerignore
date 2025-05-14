@@ -1,0 +1,8 @@
+__pycache__
+.git
+.gitignore
+notebooks/
+reports/
+*.ipynb
+*.log
+*.pkl
