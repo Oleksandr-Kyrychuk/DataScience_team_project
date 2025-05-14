@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#F63366"  # Яскравий рожевий для акцентів
+backgroundColor = "#E6F0FA"  # Білий фон
+secondaryBackgroundColor = "#F0F2F6"  # Світло-сірий для вторинних елементів
+textColor = "#262730"  # Темно-сірий текст
+font = "sans serif"
