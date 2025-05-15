@@ -41,7 +41,7 @@
    ```bash
    git checkout -b feature/ваша-назва
    ```
-3. Переконайтеся, що датасет доступний у `datasets/internet_service_churn.csv`. Якщо ні, завантажте його з [Google Drive](#) (посилання буде додано) або використайте шаблон CSV із Streamlit-додатка.
+3. Переконайтеся, що датасет доступний у `datasets/internet_service_churn.csv`. Якщо ні,використайте шаблон CSV із Streamlit-додатка.
 4. Встановіть залежності:
    ```bash
    pip install -r requirements.txt
