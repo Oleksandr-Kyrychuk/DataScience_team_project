@@ -17,7 +17,7 @@ This project is designed to predict the likelihood of customer churn for a telec
    - `upload_avg`: Average upload speed (381 missing values).
    - `download_over_limit`: Data limit exceeded (0 or 1).
    - `churn`: Customer churn (0 – no, 1 – yes, 55.41% positive class).
-3. Source: Locally in `datasets/` or download from [dataset.csv](Google_Drive_link) (template available in the Streamlit app).
+3. Source: Locally in `datasets/`.
 
 ## Key Features
 
@@ -47,7 +47,7 @@ This project is designed to predict the likelihood of customer churn for a telec
 1. Python 3.12 (recommended for compatibility, minimum 3.10 for Docker).
 2. Docker and Docker Compose for containerization.
 3. Dependencies installed from `requirements.txt`.
-4. Dataset in `datasets/internet_service_churn.csv` or downloaded from [dataset.csv](Google_Drive_link).
+4. Dataset in `datasets/internet_service_churn.csv`.
 
 ## Getting Started
 
@@ -61,7 +61,7 @@ This project is designed to predict the likelihood of customer churn for a telec
    ```
 3. Download the dataset:
    - Ensure the file is available in `datasets/internet_service_churn.csv`.
-   - If not, download from [dataset.csv](Google_Drive_link) or use the CSV template from the Streamlit app.
+     
 4. Install dependencies:
    ```bash
    pip install -r requirements.txt
@@ -172,7 +172,7 @@ This project is designed to predict the likelihood of customer churn for a telec
 
 ## Usage Example
 
-1. Upload a CSV file with customer data (template available in Streamlit or download from [dataset.csv](Google_Drive_link)).
+1. Upload a CSV file with customer data (template available in Streamlit).
 2. Receive churn probability predictions and recommendations.
 3. View visualizations (histogram or indicator).
 
