@@ -61,7 +61,7 @@
    ```
 3. Завантажте датасет:
    - Переконайтеся, що файл доступний у `datasets/internet_service_churn.csv`.
-   - Якщо ні, завантажте з [dataset.csv](посилання_на_Google_Drive) і розмістіть у `datasets/`.
+   - Якщо ні, завантажте з [dataset.csv](посилання_на_Google_Drive) або використовуйте шаблон CSV із Streamlit-додатка.
 4. Встановіть залежності:
    ```bash
    pip install -r requirements.txt
@@ -70,7 +70,6 @@
    ```bash
    streamlit run src/app.py
    ```
-   (Примітка: функція поки в розробці).
 
 ## Налаштування оточення
 
@@ -207,3 +206,4 @@
 - Oleksandr-Kyrychuk
 - Arseniy Ishchenko
 - Anastasiia Smirnova
+
