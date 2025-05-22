@@ -1,0 +1,178 @@
+ui:
+  required_columns:
+    - is_tv_subscriber
+    - is_movie_package_subscriber
+    - subscription_age
+    - remaining_contract
+    - service_failure_count
+    - download_avg
+    - upload_avg
+    - download_over_limit
+  column_descriptions:
+    is_tv_subscriber: "Whether the customer is a TV subscriber (0 or 1)"
+    is_movie_package_subscriber: "Whether the customer has a movie package (0 or 1)"
+    subscription_age: "Subscription age in years (float)"
+    remaining_contract: "Remaining contract duration in years (float)"
+    service_failure_count: "Number of service failures (integer)"
+    download_avg: "Average download speed in MB (float)"
+    upload_avg: "Average upload speed in MB (float)"
+    download_over_limit: "Number of download limit exceedances (integer)"
+  thresholds:
+    high_risk: 0.7
+    low_risk: 0.3
+  colors:
+    high_risk: "#FF4C4C"
+    medium_risk: "#FFD700"
+    low_risk: "#4CAF50"
+  languages:
+    en:
+      confirm_clear_button: "Confirm"
+      clear_confirmation: "Are you sure you want to clear the data?"
+      filter_label: "Filter by Risk Category"
+      all_categories_label: "All Categories"
+      risk_distribution_label: "Risk Category Distribution"
+      download_results_label: "Download Results"
+      home_title: "Churn Prediction App"
+      predict_title: "Predict Customer Churn"
+      model_info_title: "Model Information"
+      home_description: "Welcome to the Churn Prediction App! This tool helps predict customer churn based on their data."
+      upload_csv_tab: "Upload CSV"
+      manual_input_tab: "Manual Input"
+      upload_csv_label: "Upload CSV file"
+      data_preview: "Uploaded Data Preview:"
+      csv_success: "File successfully loaded! Number of clients:"
+      csv_error: "Error loading CSV file"
+      empty_csv_error: "Uploaded CSV file is empty"
+      manual_input_title: "Enter Customer Data Manually"
+      manual_error: "Error loading manual data"
+      instructions_label: "📋 CSV File Instructions"
+      instructions_text: |
+        For accurate predictions, your CSV file must contain the following columns:
+        {}
+        If any column is missing, it will be filled with zeros, which may affect prediction accuracy.
+        **Note**: The column `bill_avg`, if present, will be ignored as it is not used by the model.
+        **Important**: Ensure the column is named `remaining_contract` (not `reamining_contract`).
+      template_preview: "Example Data:"
+      download_template: "Download CSV Template"
+      predict_button_csv: "Predict (CSV)"
+      predict_button_manual: "Predict (Manual)"
+      predicting: "Making predictions..."
+      clear_button: "Clear Session"
+      results_title: "Prediction Results"
+      results_error: "Error displaying results"
+      predict_error: "Error making predictions"
+      client_label: "Customer"
+      probability_label: "churn probability"
+      client_id_column: "Customer ID"
+      probability_column: "Churn Probability"
+      risk_category_column: "Risk Category"
+      high_risk_label: "High"
+      medium_risk_label: "Medium"
+      download_test_data: "download_test_data"
+      low_risk_label: "Low"
+      "clear_success": "Data has been successfully cleared."
+      single_prediction_title: "Churn Probability Visualization for Customer (ID: {client_id})"
+      multiple_predictions_title: "Churn Probabilities Visualization"
+      xaxis_title: "Churn Probability"
+      yaxis_title: "Customer (ID)"
+      gauge_title: "Churn Probability"
+      results_table_title: "Prediction Results Table"
+      download_results: "Download Prediction Results"
+      detailed_results_label: "Detailed Prediction Results"
+      recommendations:
+        High: "Contact the customer (ID: {client_id}) to offer discounts or retention measures."
+        Medium: "Customer (ID: {client_id}) may be at risk, consider monitoring."
+        Low: "Customer (ID: {client_id}) is likely to stay with the company."
+      model_description: |
+        The model is a RandomForestClassifier trained on customer data.
+        Features used: subscription_age, remaining_contract, service_failure_count, download_avg, upload_avg, etc.
+        ### Model Parameters
+        - **n_estimators**: 368
+        - **max_depth**: 3
+        - **min_samples_split**: 14
+        - **min_samples_leaf**: 9
+        - **max_features**: sqrt
+        - **bootstrap**: False
+      metrics_title: "Model Metrics"
+      metrics_not_found: "Model metrics not found."
+      feature_importance_caption: "Feature Importance"
+      feature_importance_not_found: "Feature importance plot not found."
+      model_page_error: "Error displaying model page"
+    uk:
+      confirm_clear_button: "Підтверджую"
+      download_test_data: "download_test_data"
+      filter_label: "Фільтр за категорією ризику"
+      all_categories_label: "Всі категорії"
+      risk_distribution_label: "Розподіл категорій ризику"
+      download_results_label: "Завантажити результати"
+      detailed_results_label: "Детальні результати передбачень"
+      home_title: "Додаток для прогнозування відтоку"
+      "clear_success": "Дані успішно очищено."
+      predict_title: "Прогнозування відтоку клієнтів"
+      model_info_title: "Інформація про модель"
+      home_description: "Ласкаво просимо до додатку для прогнозування відтоку! Цей інструмент допомагає прогнозувати відтік клієнтів на основі їхніх даних."
+      upload_csv_tab: "Завантажити CSV"
+      manual_input_tab: "Ввести вручну"
+      upload_csv_label: "Завантажити CSV-файл"
+      data_preview: "Попередній перегляд даних:"
+      csv_success: "Файл успішно завантажено! Кількість клієнтів:"
+      csv_error: "Помилка завантаження CSV-файлу"
+      empty_csv_error: "Завантажений CSV-файл порожній"
+      manual_input_title: "Введіть дані клієнта вручну"
+      manual_error: "Помилка завантаження ручних даних"
+      instructions_label: "📋 Інструкція для CSV-файлу"
+      instructions_text: |
+        Для коректного прогнозування ваш CSV-файл повинен містити наступні колонки:
+        {}
+        Якщо будь-яка колонка відсутня, вона буде заповнена нулями, що може вплинути на точність прогнозу.
+        **Примітка**: Стовпець `bill_avg`, якщо присутній, буде проігноровано, оскільки він не використовується моделлю.
+        **Важливо**: Переконайтеся, що колонка називається `remaining_contract` (а не `reamining_contract`).
+      template_preview: "Приклад даних:"
+      download_template: "Завантажити шаблон CSV"
+      predict_button_csv: "Прогнозувати (CSV)"
+      predict_button_manual: "Прогнозувати (Вручну)"
+      predicting: "Виконується прогнозування..."
+      clear_button: "Очистити сесію"
+      results_title: "Результати прогнозу"
+      results_error: "Помилка відображення результатів"
+      predict_error: "Помилка виконання прогнозування"
+      client_label: "Клієнт"
+      probability_label: "ймовірність відтоку"
+      client_id_column: "ID клієнта"
+      probability_column: "Ймовірність відтоку"
+      risk_category_column: "Категорія ризику"
+      high_risk_label: "Висока"
+      medium_risk_label: "Середня"
+      low_risk_label: "Низька"
+      single_prediction_title: "Візуалізація ймовірності відтоку для клієнта (ID: {client_id})"
+      multiple_predictions_title: "Візуалізація ймовірностей відтоку"
+      xaxis_title: "Ймовірність відтоку"
+      yaxis_title: "Клієнт (ID)"
+      gauge_title: "Ймовірність відтоку"
+      results_table_title: "Підсумкова таблиця результатів"
+      download_results: "Завантажити результати прогнозу"
+      recommendations:
+        High: "Рекомендується зв’язатися з клієнтом (ID: {client_id}) для пропозиції знижок або інших утримуючих заходів."
+        Medium: "Клієнт (ID: {client_id}) може бути в зоні ризику, варто звернути увагу."
+        Low: "Клієнт (ID: {client_id}), ймовірно, залишиться з компанією."
+      model_description: |
+        Модель — це RandomForestClassifier, навчений на даних клієнтів.
+        Використані ознаки: subscription_age, remaining_contract, service_failure_count, download_avg, upload_avg тощо.
+        ### Параметри моделі
+        - **n_estimators**: 368
+        - **max_depth**: 3
+        - **min_samples_split**: 14
+        - **min_samples_leaf**: 9
+        - **max_features**: sqrt
+        - **bootstrap**: False
+      metrics_title: "Метрики моделі"
+      metrics_not_found: "Метрики моделі не знайдено."
+      feature_importance_caption: "Важливість ознак"
+      feature_importance_not_found: "Графік важливості ознак не знайдено."
+      model_page_error: "Помилка відображення сторінки моделі"
+paths:
+  logo: "assets/logo black.svg"
+  model: "artifacts/model.pkl"
+  scaler: "artifacts/scaler.pkl"
+  metrics: "artifacts/metrics.json"
+  feature_importance: "artifacts/feature_importance.png"

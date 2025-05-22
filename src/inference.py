@@ -1,37 +1,41 @@
 import pandas as pd
 import numpy as np
 import logging
+from typing import Optional, Union
+from sklearn.preprocessing import StandardScaler
+from joblib import Parallel, delayed
+import streamlit as st
 
 
-def preprocess_input(df=None, scaler=None, logger=None):
-    """
-    Препроцесинг вхідних даних для передбачення.
-
-    Args:
-        df (pd.DataFrame): Вхідний DataFrame.
-        scaler (StandardScaler): Об'єкт StandardScaler для нормалізації.
-        logger (logging.Logger, optional): Логер для запису повідомлень.
-
-    Returns:
-        pd.DataFrame: Оброблений DataFrame, готовий для передбачення.
-
-    Raises:
-        ValueError: Якщо дані некоректні або відсутні.
-    """
-    if logger is None:
-        logger = logging.getLogger(__name__)
-
-    # Перевірка на порожній або None DataFrame
+@st.cache_data(hash_funcs={pd.DataFrame: lambda x: x.to_string()})
+def preprocess_input(
+    df: pd.DataFrame, _scaler: StandardScaler, _logger=None
+) -> pd.DataFrame:
+    if _logger is None:
+        _logger = logging.getLogger(__name__)
     if df is None or df.empty:
-        logger.error("Вхідний DataFrame не може бути порожнім або None.")
-        raise ValueError("Вхідний DataFrame не може бути порожнім або None.")
+        _logger.error("Input DataFrame cannot be empty or None.")
+        raise ValueError("Input DataFrame cannot be empty or None.")
 
-    # Перевірка наявності необхідних колонок
+    def process_chunk(chunk):
+        return chunk
+
+    # Розбиття на чанки для великих даних
+    if len(df) > 1000:
+        n_chunks = (len(df) // 1000) + 1
+        chunks = np.array_split(df, n_chunks)
+        processed_chunks = Parallel(n_jobs=-1)(
+            delayed(process_chunk)(chunk) for chunk in chunks
+        )
+        df = pd.concat(processed_chunks)
+    else:
+        df = process_chunk(df)
+
     required_cols = [
         "is_tv_subscriber",
         "is_movie_package_subscriber",
         "subscription_age",
-        "reamining_contract",
+        "remaining_contract",
         "service_failure_count",
         "download_avg",
         "upload_avg",
@@ -39,35 +43,33 @@ def preprocess_input(df=None, scaler=None, logger=None):
     ]
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
-        logger.warning(
-            f"Відсутні колонки: {missing_cols}. Заповнюємо значеннями за замовчуванням (0)."
+        _logger.warning(
+            f"Missing columns: {missing_cols}. Filling with default values (0)."
         )
         for col in missing_cols:
-            df[col] = 0  # Заповнення відсутніх колонок нулями
+            df[col] = 0
 
-    # Валідація типу даних для download_over_limit
     if not pd.api.types.is_numeric_dtype(df["download_over_limit"]):
-        logger.error("Колонка 'download_over_limit' містить нечислові значення.")
-        raise ValueError("Колонка 'download_over_limit' повинна містити числові значення.")
+        _logger.error("Column 'download_over_limit' contains non-numeric values.")
+        raise ValueError("Column 'download_over_limit' must contain numeric values.")
 
-    # Конвертація до числового типу та обробка некоректних значень
-    df["download_over_limit"] = pd.to_numeric(df["download_over_limit"], errors="coerce")
+    df["download_over_limit"] = pd.to_numeric(
+        df["download_over_limit"], errors="coerce"
+    )
     df["download_over_limit"] = df["download_over_limit"].fillna(0).astype(int)
-    # Обмеження значень до діапазону 0-7
     df["download_over_limit"] = df["download_over_limit"].clip(0, 7)
 
-    # Обробка пропусків
-    df["reamining_contract"] = df["reamining_contract"].fillna(0)
+    df["remaining_contract"] = df["remaining_contract"].fillna(0)
     df["download_avg"] = df["download_avg"].fillna(df["download_avg"].median())
     df["upload_avg"] = df["upload_avg"].fillna(df["upload_avg"].median())
 
-    # Заміна негативних значень subscription_age на медіану
     if (df["subscription_age"] < 0).any():
-        logger.warning("Знайдено від'ємні значення в 'subscription_age'. Замінюємо на медіану.")
+        _logger.warning(
+            "Negative values found in 'subscription_age'. Replacing with median."
+        )
         median_age = df.loc[df["subscription_age"] >= 0, "subscription_age"].median()
         df.loc[df["subscription_age"] < 0, "subscription_age"] = median_age
 
-    # Обмеження викидів у download_avg за допомогою IQR
     Q1 = df["download_avg"].quantile(0.25)
     Q3 = df["download_avg"].quantile(0.75)
     IQR = Q3 - Q1
@@ -79,7 +81,6 @@ def preprocess_input(df=None, scaler=None, logger=None):
         np.where(df["download_avg"] < lower, lower, df["download_avg"]),
     )
 
-    # Обмеження викидів у upload_avg за допомогою IQR
     Q1 = df["upload_avg"].quantile(0.25)
     Q3 = df["upload_avg"].quantile(0.75)
     IQR = Q3 - Q1
@@ -91,33 +92,29 @@ def preprocess_input(df=None, scaler=None, logger=None):
         np.where(df["upload_avg"] < lower, lower, df["upload_avg"]),
     )
 
-    # One-Hot Encoding для download_over_limit
     for i in range(8):
         df[f"download_over_limit_{i}"] = (df["download_over_limit"] == i).astype(int)
     df.drop(columns=["download_over_limit"], errors="ignore", inplace=True)
 
-    # Нормалізація
     numeric_cols = [
         "subscription_age",
-        "reamining_contract",
+        "remaining_contract",
         "service_failure_count",
         "download_avg",
         "upload_avg",
     ]
-    if scaler is None:
-        logger.error("Scaler is required for preprocessing.")
+    if _scaler is None:
+        _logger.error("Scaler is required for preprocessing.")
         raise ValueError("Scaler is required for preprocessing.")
-    df[numeric_cols] = scaler.transform(df[numeric_cols])
+    df[numeric_cols] = _scaler.transform(df[numeric_cols])
 
-    # Видаляємо зайві колонки
     df.drop(columns=["id", "bill_avg"], errors="ignore", inplace=True)
 
-    # Забезпечуємо правильний порядок колонок
     expected_columns = [
         "is_tv_subscriber",
         "is_movie_package_subscriber",
         "subscription_age",
-        "reamining_contract",
+        "remaining_contract",
         "service_failure_count",
         "download_avg",
         "upload_avg",
@@ -131,37 +128,33 @@ def preprocess_input(df=None, scaler=None, logger=None):
         "download_over_limit_7",
     ]
     df = df.reindex(columns=expected_columns, fill_value=0)
-    logger.info("Дані успішно оброблені для передбачення.")
+    _logger.info("Data successfully preprocessed for prediction.")
     return df
 
 
-def predict_churn(model, data, logger=None):
-    """
-    Прогнозування ймовірності відтоку.
-
-    Args:
-        model: Навчена модель.
-        data (pd.DataFrame): Оброблені дані.
-        logger (logging.Logger, optional): Логер для запису повідомлень.
-
-    Returns:
-        np.ndarray: Ймовірності відтоку (клас 1).
-    """
+def predict_churn(
+    model: object, data: pd.DataFrame, logger: Optional[logging.Logger] = None
+) -> np.ndarray:
+    """Predict churn probabilities."""
     if logger is None:
         logger = logging.getLogger(__name__)
 
     if model is None:
-        logger.error("Модель не може бути None.")
-        raise ValueError("Модель не може бути None.")
+        logger.error("Model cannot be None.")
+        raise ValueError("Model cannot be None.")
 
     if data is None or data.empty:
-        logger.error("Вхідні дані не можуть бути порожніми або None.")
-        raise ValueError("Вхідні дані не можуть бути порожніми або None.")
+        logger.error("Input data cannot be empty or None.")
+        raise ValueError("Input data cannot be empty or None.")
+
+    if set(data.columns) != set(model.feature_names_in_):
+        logger.error("Input columns do not match model features.")
+        raise ValueError("Input columns do not match model features.")
 
     try:
         predictions = model.predict_proba(data)[:, 1]
-        logger.info("Передбачення успішно виконано.")
+        logger.info("Predictions made successfully.")
         return predictions
     except Exception as e:
-        logger.error(f"Помилка під час передбачення: {str(e)}")
-        raise ValueError(f"Помилка під час передбачення: {str(e)}")
+        logger.error(f"Error during prediction: {str(e)}")
+        raise ValueError(f"Error during prediction: {str(e)}")

@@ -402,4 +402,7 @@ FodyWeavers.xsd
 
 .idea/
 
-
+.venv/
+catboost_info/
+*.png
+structure.txt
